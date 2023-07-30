@@ -9,6 +9,7 @@ Forkify is a recipe application that allows users to search for recipes, view de
 - [Installation](#installation)
 - [Usage](#usage)
 - [API Key](#api-key)
+- [DEMO](#demo)
 - [Acknowledgements](#Acknowledgements)
 - [License](#license)
 - [Contact](#contact)
@@ -51,6 +52,10 @@ Once the application is running, users can interact with it as follows:
 ## API Key
 
 The application uses the Forkify API (https://forkify-api.herokuapp.com/) to fetch recipe data. No API key is required to access the public data of the Forkify API.
+
+## Demo
+
+A demo of the application can be found here https://64c6d38542477c3b236721a0--gregarious-fox-dab8e8.netlify.app/
 
 ## Acknowledgements
 
