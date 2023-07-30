@@ -15,7 +15,7 @@ Forkify is a recipe application that allows users to search for recipes, view de
 
 ## Introduction
 
-Forkify is a web-based recipe application developed using JavaScript and the Fetch API. The application fetches recipe data from the Forkify API (https://forkify-api.herokuapp.com/api/v2/) and displays it to users through an interactive user interface. Users can search for recipes, view detailed recipe information, adjust the number of servings, bookmark recipes, and even upload their own recipes to the API.
+Forkify is a web-based recipe application developed using JavaScript and the Fetch API. The application fetches recipe data from the Forkify API (https://forkify-api.herokuapp.com/) and displays it to users through an interactive user interface. Users can search for recipes, view detailed recipe information, adjust the number of servings, bookmark recipes, and even upload their own recipes to the API.
 
 ## Technologies
 
@@ -50,7 +50,7 @@ Once the application is running, users can interact with it as follows:
 
 ## API Key
 
-The application uses the Forkify API (https://forkify-api.herokuapp.com/api/v2/) to fetch recipe data. No API key is required to access the public data of the Forkify API.
+The application uses the Forkify API (https://forkify-api.herokuapp.com/) to fetch recipe data. No API key is required to access the public data of the Forkify API.
 
 ## Acknowledgements
 
