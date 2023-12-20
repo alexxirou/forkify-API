@@ -8,7 +8,7 @@ export const API_URL = `https://forkify-api.herokuapp.com/api/v2/recipes/`;
  * The API key used for authentication with the Recipe API.
  * @type {string}
  */
-export const KEY = '7c5ff753-4c85-4753-92cf-f0354239d09f'; //should bre replaced with a valid key
+export const KEY = 'ad998d8e-6312-495b-8686-4866cc09402c'; //should bre replaced with a valid key
 
 /**
  * The timeout duration (in seconds) for API requests.
@@ -34,3 +34,4 @@ export const RES_PER_PAGE = 10;
  * @type {number}
  */
 export const MODAL_CLOSE_SEC = 2.5;
+

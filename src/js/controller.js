@@ -1,5 +1,4 @@
 // Import 'async' from 'regenerator-runtime' to enable asynchronous functionality with async/await.
-import { async } from 'regenerator-runtime';
 
 // Import modules for the models and views of the application.
 import * as model from './model.js';
@@ -10,8 +9,12 @@ import bookmarksView from './views/bookmarks.View.js';
 import addRecipeView from './views/addRecipeView.js';
 import paginationView from './views/paginationView.js';
 
+
+
 // Import constant for modal close duration from 'config.js'.
 import { MODAL_CLOSE_SEC } from './config.js';
+
+
 
 // Select the recipe container element from the DOM.
 const recipeContainer = document.querySelector('.recipe');
@@ -134,6 +137,10 @@ const controlAddRecipe = async function (newRecipe) {
 
 // Initialization function to set up event handlers for the views and models.
 const init = function () {
+
+
+
+
   // Add event handler to render bookmarks on page load.
   bookmarksView.addHandlerRender(controlLoadBookmark);
 
@@ -154,7 +161,12 @@ const init = function () {
 
   // Add event handler to handle recipe upload.
   addRecipeView.addHandlerUpload(controlAddRecipe);
+
+
+
 };
+  
+
 
 // Call the initialization function to set up the application.
 init();

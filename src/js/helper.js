@@ -1,5 +1,6 @@
 import { TIME_OUT } from "./config";
 
+
 /**
  * Creates a promise that rejects after a specified duration if not resolved.
  * @param {number} s - The duration in seconds before the promise rejects.
@@ -49,3 +50,7 @@ export const AJAX = async function (url, uploadData = undefined) {
     throw err;
   }
 };
+
+
+
+
