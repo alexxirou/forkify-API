@@ -15,7 +15,6 @@ const corsOptions = {
 // Middleware to parse JSON
 app.use(express.json());
 
-
 app.use(cors(corsOptions));
 
 // Redis client setup
@@ -71,24 +70,24 @@ app.post("/set/:db/:key", cors(), async (req, res) => {
 });
 
 
-
+// Get data from Redis cache based on database and key
 app.get("/get/:db/:key", (req, res) => {
   const { db, key } = req.params;
-  //console.log(db, key);
-
+  
+  // Retrieve data from Redis cache
   client.get(`recipe:${db}:${key}`)
     .then(data => {
       if (data) {
-       //console.log("Retrieved data:", data);
         try {
           const parsedData = JSON.parse(data);
-          //console.log("Parsed data:", parsedData);
+          // Return retrieved data
           res.status(200).json(parsedData);
         } catch (error) {
           console.error("Error parsing data:", error);
           res.status(500).send("Error parsing data");
         }
       } else {
+        // Data not found in Redis cache
         res.status(404).send("Data not found");
       }
     })
@@ -98,25 +97,23 @@ app.get("/get/:db/:key", (req, res) => {
     });
 });
 
-
-
-
-// Update data in the cache (if key exists)
-app.put("/update/:key", async (req, res) => {
+// Update data in the Redis cache based on key
+app.put("/update/:db/:key", async (req, res) => {
   const { db, key } = req.params;
   const data = JSON.stringify(req.body);
 
-
   try {
+    // Set data in Redis cache with expiration and only if the key exists
     client.set(`recipe:${db}:${key}`, data, "XX", "EX", 120).then((reply, err) => {
       if (err) {
         console.error("Error setting data:", err);
         res.status(500).send("Internal Server Error");
-      }     
-      else if (reply === 'OK') {
+      } else if (reply === 'OK') {
+        // Data updated successfully
         console.log("Data updated successfully");
         res.status(200).send("Data updated successfully");
       } else if(reply === null) {
+        // Recipe data does not exist in Redis
         console.log("Recipe data does not exist in Redis");
         res.status(204).send("Recipe data does not exist in Redis");
       }
@@ -132,8 +129,10 @@ app.get("/smembers/:db/:key", async (req, res) => {
   const { db, key } = req.params;
  
   try {
+    // Get members of the Redis set and parse the JSON objects
     const queryObjects = await client.sMembers(`recipe:${db}:${key}`);
     const parsedData = queryObjects.map((item) => JSON.parse(item)); 
+    // Return the parsed objects
     res.status(200).json(parsedData);
   } catch (err) {
     console.error("Error getting objects associated with query:", err);
@@ -141,15 +140,17 @@ app.get("/smembers/:db/:key", async (req, res) => {
   }
 });
 
-
+// Add objects to query set in Redis
 app.post("/sadd/:db/:key", async (req, res) => {
   const { db, key } = req.params;
   const values = req.body;
   const serializedObjects = values.map((obj) => JSON.stringify(obj));
   
   try {
+    // Add serialized objects to the Redis set with expiration
     await Promise.all(serializedObjects.map((item) => client.sAdd(`recipe:${db}:${key}`, item, 'EX', 120)));
     
+    // Objects added successfully
     res.status(200).send("Objects added to query set in Redis successfully");
   } catch (err) {
     console.error("Error adding objects to query set in Redis:", err);
@@ -158,11 +159,12 @@ app.post("/sadd/:db/:key", async (req, res) => {
 });
 
 
-
+// Endpoint to check if a key exists in a database
 app.get("/exists/:db/:key", async (req, res) => {
   try {
     const { db, key } = req.params;
 
+    // Check if the key exists in the specified database
     client.exists(`recipe:${db}:${key}`).then((exists) => {
       console.log(`Key '${key}' exists: ${exists}`);
       
