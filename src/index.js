@@ -144,9 +144,12 @@ app.get("/smembers/:db/:key", async (req, res) => {
 app.post("/sadd/:db/:key", async (req, res) => {
   const { db, key } = req.params;
   const values = req.body;
-  const serializedObjects = values.map((obj) => JSON.stringify(obj));
-  
+
   try {
+    if(!values) {
+      throw new Error("No values provided");
+    }
+    const serializedObjects = values.map((item) => JSON.stringify(item));
     // Add serialized objects to the Redis set with expiration
     await Promise.all(serializedObjects.map((item) => client.sAdd(`recipe:${db}:${key}`, item, 'EX', 120)));
     

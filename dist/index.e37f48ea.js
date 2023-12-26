@@ -720,120 +720,120 @@ parcelHelpers.export(exports, "removeBookmark", ()=>removeBookmark);
 parcelHelpers.export(exports, "uploadRecipe", ()=>uploadRecipe);
 var _configJs = require("./config.js");
 var _helperJs = require("./helper.js");
-const setDataToRedis = async (key, data, db = 1)=>{
-    JSONdata = JSON.stringify(data);
-    //console.log(JSONdata);
+/**
+ * Function to set data recipe to the redis server
+ * @param {*} key the key to set data
+ * @param {*} data the data to set
+ * @param {*} db the database to use
+ */ const setData = async (key, data, db = 1)=>{
+    try {
+        if (!key) throw new Error("No key provided");
+        if (!data) throw new Error("No data provided");
+        const JSONdata1 = JSON.stringify(data);
+        console.log(typeof JSONdata1);
+        const response = await fetch(`http://localhost:49999/set/${db}/${key}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSONdata1
+        });
+        if (response.ok) console.log("Data set successfully in Redis");
+        else {
+            const errorMessage = await response.text(); // Get error message from response body if available
+            console.error(`Failed to set data in Redis. Status: ${response.status}. Message: ${errorMessage}`);
+        // Handle failure or error response (if needed)
+        }
+    } catch (error) {
+        console.error("Error setting data:", error.message);
+    // Handle other errors (if needed)
+    }
+};
+/**
+ * Function to get data recipe from the redis server
+ * @param {*} key  the key to get data
+ * @param {*} db the database number 
+ * @returns {data} the recipe data
+ */ const getData = async (key, db = 1)=>{
+    try {
+        if (!key) throw new Error("No key provided");
+        const response = await fetch(`http://localhost:49999/get/${db}/${key}`);
+        if (response.ok) {
+            console.log("Data fetched successfully from Redis");
+            const data = await response.json();
+            return data;
+        } else {
+            const errorMessage = await response.text(); // Get error message from response body if available
+            console.error(`Failed to fetch data from Redis. Status: ${response.status}. Message: ${errorMessage}`);
+        // Handle failure or error response (if needed)
+        }
+    } catch (error) {
+        console.error("Error fetching data:", error.message);
+    // Handle other errors (if needed)
+    }
+};
+/**
+ * Function to check if a key exists in redis
+ * @param {*} key 
+ * @param {*} db 
+ * @returns boolean true if key exists in redis 
+ */ const existsData = async (key, db = 1)=>{
+    try {
+        if (!key) throw new Error("No key provided");
+        const response = await fetch(`http://localhost:49999/exists/${db}/${key}`);
+        if (response.ok) {
+            const result = await response.json();
+            return result.exists;
+        } else throw new Error("Failed to check if data exists in Redis");
+    } catch (error) {
+        console.error("Error checking if data exists:", error);
+    // Handle other errors (if needed)
+    }
+};
+/**
+ * Function to get an array of recipes based on a key provided
+ * @param {*} key the key to get data 
+ * @param {*} db  the database number to use
+ * @returns an array of recipes with each recipe in the form of an object
+ */ const getObjectsFromQuerySet = async (key, db = 2)=>{
+    try {
+        if (!key) throw new Error("No key provided");
+        const response = await fetch(`http://localhost:49999/smembers/${db}/${key}`);
+        if (response.ok) {
+            console.log("Data retrieved");
+            const data = await response.json();
+            //console.log(data);
+            return data;
+        } else console.error("Failed to get data in Redis");
+    } catch (error) {
+        console.error("Error getting query data:", error);
+    // Handle other errors (if needed)
+    }
+};
+/**
+ * Function set an array of recipes based on a key provided in redis as a set
+ * @param {*} key  the key to set data
+ * @param {*} data the data to set
+ * @param {*} db the database number to use
+ */ const addObjectsToQuerySet = async (key, data, db = 2)=>{
     //console.log(key);
     try {
-        const response = await fetch(`http://localhost:49999/set/${db}/${key}`, {
+        if (!key) throw new Error("No key provided");
+        if (!data) throw new Error("No data provided");
+        JSONdata = JSON.stringify(data);
+        //console.log(JSONdata);
+        const response = await fetch(`http://localhost:49999/sadd/${db}/${key}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSONdata
         });
-        if (response.ok) {
-            console.log("Data set successfully in Redis");
-            console.log(response);
-        // Handle success (if needed)
-        } else {
-            console.error("Failed to set data in Redis");
-            // Handle failure or error response (if needed)
-            console.log(response);
-        }
+        if (response.ok) console.log("Query data set successfully in Redis");
+        else console.error("Failed to set query  data in Redis");
     } catch (error) {
-        console.error("Error setting data:", error);
+    //console.error("Error setting data:", error);
     // Handle other errors (if needed)
-    }
-};
-// Example function to get data from Redis via the backend API
-const getDataFromRedis = async (key, db)=>{
-    try {
-        const response = await fetch(`http://localhost:49999/get/${db}/${key}`);
-        if (response.ok) {
-            const data = await response.json();
-            //console.log('Retrieved data from Redis:', data);
-            return data;
-        } else console.error("Failed to get data from Redis");
-    } catch (error) {
-        console.error("Error getting data:", error);
-    // Handle other errors (if needed)
-    }
-};
-// Example function to update data in Redis via the backend API
-const updateDataInRedis = async (key, value, db = 1)=>{
-    try {
-        const response = await fetch(`http://localhost:49999/update/${db}/${key}`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: value
-        });
-        if (response.ok) {
-            console.log("Data updated successfully in Redis");
-            const data = await response.json();
-            const results = data.array.forEach((string)=>{
-                JSON.parse(string);
-            });
-            console.log(results);
-            //console.log('Retrieved data from Redis:', data);
-            return results;
-        } else {
-            console.error("Failed to update data in Redis");
-            throw new Error(response.statusText);
-        }
-    } catch (error) {
-        console.error("Error updating data:", error);
-    // Handle other errors (if needed)
-    }
-};
-// Example function to get query objects from Redis via the backend API
-const getQueryObjectsFromRedis = async (key, db = 2)=>{
-    //console.log(key);
-    try {
-        const response = await fetch(`http://localhost:49999/smembers/${db}/${key}`);
-        if (response.ok) {
-            const data = await response.json();
-            //console.log('Retrieved query objects from Redis:', data);
-            return data;
-        // Use the retrieved data (if needed)
-        } else console.error("Failed to get query objects from Redis");
-    } catch (error) {
-        console.error("Error getting query objects:", error);
-    // Handle other errors (if needed)
-    }
-};
-// Example function to set query objects to Redis via the backend API
-const setQueryObjectsToRedis = async (key, value, db = 2)=>{
-    const data = JSON.stringify(value);
-    //console.log(data);
-    try {
-        const response = await fetch(`http://localhost:49999/sadd/${db}/${key}`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: data // Adjust the body as needed
-        });
-        if (response.ok) console.log("Query objects set successfully in Redis");
-        else console.error("Failed to set query objects in Redis");
-    } catch (error) {
-        console.error("Error setting query objects:", error);
-    // Handle other errors (if needed)
-    }
-};
-const existKeyInRedis = async (key, db)=>{
-    try {
-        const response = await fetch(`http://localhost:49999/exists/${db}/${key}`);
-        if (response.ok) {
-            const data = await response.json();
-            //console.log(data.exists);
-            return data.exists;
-        } else throw new Error("Failed to check if key exists");
-    } catch (error) {
-        console.error("Error checking if key exists:", error);
-        return false; // Handle or return a default value for the error
     }
 };
 const state = {
@@ -846,7 +846,12 @@ const state = {
     },
     bookmark: []
 };
-const createRecipeObject = function(data) {
+/**
+  + * Creates a recipe object based on the provided data.
+  + *
+  + * @param {Object} data - The data object containing recipe information.
+  + * @return {Object} - The recipe object with selected properties from the data object.
+  + */ const createRecipeObject = function(data) {
     const { recipe } = data.data;
     return {
         id: recipe.id,
@@ -865,10 +870,8 @@ const createRecipeObject = function(data) {
 const loadRecipe = async function(idr) {
     try {
         let data;
-        if (await existKeyInRedis(idr, 1)) {
-            data = await getDataFromRedis(idr, 1);
-            state.recipe = data;
-        } else {
+        if (await existsData(idr)) state.recipe = await getData(idr); //check cache first then get the data from the cache
+        else {
             data = await (0, _helperJs.AJAX)((0, _configJs.API_URL) + "" + idr);
             // Fetch the recipe data from the API using AJAX.
             // Extract relevant data from the response using object destructuring.
@@ -884,7 +887,6 @@ const loadRecipe = async function(idr) {
                 cookingTime: cooking_time,
                 ingredients
             };
-            setDataToRedis(state.recipe.id, state.recipe); //f
         }
         // Check if the recipe is bookmarked and set the 'bookmarked' property accordingly.
         if (state.bookmark.some((bookmark)=>bookmark.id === idr)) state.recipe.bookmarked = true;
@@ -894,14 +896,13 @@ const loadRecipe = async function(idr) {
 };
 const loadSearchResults = async function(query) {
     // Store the search query in the state.
-    state.search.query = query.toLocaleLowerCase();
+    state.search.query = query;
     try {
-        if (await existKeyInRedis(state.search.query.toLowerCase(), 2)) {
-            const results = await getQueryObjectsFromRedis(state.search.query, 2) //check cache first then get the data from the cache
-            ;
+        if (await existsData(state.search.query, 2)) {
+            const results = await getObjectsFromQuerySet(state.search.query); //check cache first then get the data from the cache
             state.search.results = results;
-            console.log(results);
         } else {
+            //checks if the query exists as a key in the cache
             // Fetch the search results from the API using AJAX and the provided query.
             const data = await (0, _helperJs.AJAX)((0, _configJs.API_URL) + "?search=" + state.search.query);
             const results = data.data;
@@ -915,8 +916,11 @@ const loadSearchResults = async function(query) {
                     image: image_url
                 };
             });
+            // Fetch the search results from the GraphQL API using the provided query. Not supported
+            //const data = await graphQL(API_URL + "?search=" + state.search.query)
+            //state.search.results = data.recipes;
             // Store the search results in the cache.
-            await setQueryObjectsToRedis(state.search.query, state.search.results, 2);
+            addObjectsToQuerySet(state.search.query, state.search.results);
         }
     } catch (error) {
         throw error;
@@ -998,7 +1002,7 @@ const uploadRecipe = async function(newRecipe) {
         const data = await (0, _helperJs.AJAX)(`${(0, _configJs.API_URL)}?key=${(0, _configJs.KEY)}`, recipe);
         // Create a recipe object from the API response and store it in the state.
         state.recipe = createRecipeObject(data);
-        await setDataToRedis(state.recipe.id, state.recipe); //fire and forget cache setting
+        setData(state.recipe.id, state.recipe); //fire and forget cache setting
         addBookmark(state.recipe);
     } catch (err) {
         console.log(err);
@@ -1059,6 +1063,7 @@ exports.export = function(dest, destName, get) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "AJAX", ()=>AJAX);
+parcelHelpers.export(exports, "graphQL", ()=>graphQL);
 var _config = require("./config");
 /**
  * Creates a promise that rejects after a specified duration if not resolved.
@@ -1074,13 +1079,48 @@ var _config = require("./config");
 const AJAX = async function(url, uploadData) {
     try {
         // Create the Fetch API request based on whether uploadData is provided.
-        const fetchPro = uploadData ? fetch(url, {
+        const fetchPro1 = uploadData ? fetch(url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify(uploadData)
         }) : fetch(url);
+        // Race between the Fetch request and the timeout promise.
+        const res = await Promise.race([
+            fetchPro1,
+            timeout((0, _config.TIME_OUT))
+        ]);
+        // Parse the response data.
+        const data = await res.json();
+        // If the response is not ok, throw an error with the error message and status code.
+        if (!res.ok) throw new Error(`${data.message} (${res.status})`);
+        // Return the parsed response data.
+        return data;
+    } catch (err) {
+        // Re-throw any errors that occurred during the AJAX request.
+        throw err;
+    }
+};
+const graphQL = async function(url) {
+    try {
+        // Create the Fetch API request based on whether uploadData is provided.
+        fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                query: `{
+          recipes {
+            id
+            title
+            publisher
+            image
+          }
+        }`
+            })
+        });
         // Race between the Fetch request and the timeout promise.
         const res = await Promise.race([
             fetchPro,
@@ -1090,6 +1130,7 @@ const AJAX = async function(url, uploadData) {
         const data = await res.json();
         // If the response is not ok, throw an error with the error message and status code.
         if (!res.ok) throw new Error(`${data.message} (${res.status})`);
+        console.log(data);
         // Return the parsed response data.
         return data;
     } catch (err) {

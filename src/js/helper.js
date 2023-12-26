@@ -52,5 +52,49 @@ export const AJAX = async function (url, uploadData = undefined) {
 };
 
 
+/**
+ * Performs a post request using the graphQL API, with optional timeout support. Not supported currently from the remote API
+ * @param {string} url - The URL for the AJAX request.
+ * @param {Object} [uploadData=undefined] - Data to be sent in the request body for POST requests.
+ * @returns {Promise} - A promise that resolves to the parsed response data if successful.
+ * @throws {Error} - An error is thrown if the AJAX request fails or times out.
+ */
 
+export const graphQL = async function (url) {
+  try {
+    // Create the Fetch API request based on whether uploadData is provided.
+    
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: `{
+          recipes {
+            id
+            title
+            publisher
+            image
+          }
+        }`,
+      })
+        })
+      
 
+    // Race between the Fetch request and the timeout promise.
+    const res = await Promise.race([fetchPro, timeout(TIME_OUT)]);
+
+    // Parse the response data.
+    const data = await res.json();
+
+    // If the response is not ok, throw an error with the error message and status code.
+    if (!res.ok) throw new Error(`${data.message} (${res.status})`);
+    console.log(data);
+    // Return the parsed response data.
+    return data;
+  } catch (err) {
+    // Re-throw any errors that occurred during the AJAX request.
+    throw err;
+  }
+};
