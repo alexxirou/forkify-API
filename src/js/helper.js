@@ -53,23 +53,21 @@ export const AJAX = async function (url, uploadData = undefined) {
 
 
 /**
- * Performs a post request using the graphQL API, with optional timeout support. Not supported currently from the remote API
- * @param {string} url - The URL for the AJAX request.
- * @param {Object} [uploadData=undefined] - Data to be sent in the request body for POST requests.
+ * Performs a post request using the GraphQL API, with optional timeout support.
+ * @param {string} url - The URL for the GraphQL request.
+ * @param {Object} [queryObject=undefined] - Optional GraphQL query object.
+ * @param {number} [timeoutDuration=undefined] - Optional timeout duration in milliseconds.
  * @returns {Promise} - A promise that resolves to the parsed response data if successful.
- * @throws {Error} - An error is thrown if the AJAX request fails or times out.
+ * @throws {Error} - An error is thrown if the request fails, times out, or if GraphQL errors are present in the response.
  */
-
-export const graphQL = async function (url) {
+export const graphQL = async function (url, queryObject = undefined, timeoutDuration = undefined) {
   try {
-    // Create the Fetch API request based on whether uploadData is provided.
-    
-    fetch(url, {
+    const fetchOptions = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
+      body: JSON.stringify(queryObject || {
         query: `{
           recipes {
             id
@@ -78,23 +76,39 @@ export const graphQL = async function (url) {
             image
           }
         }`,
-      })
-        })
-      
+      }),
+    };
+
+    // Perform the Fetch API request.
+    const fetchPromise = fetch(url, fetchOptions);
+
+    // Set up a timeout if a duration is provided.
+    let timeoutPromise;
+    if (timeoutDuration) {
+      timeoutPromise = timeout(timeoutDuration);
+    }
 
     // Race between the Fetch request and the timeout promise.
-    const res = await Promise.race([fetchPro, timeout(TIME_OUT)]);
+    const res = await Promise.race([fetchPromise, timeoutPromise].filter(Boolean));
 
     // Parse the response data.
     const data = await res.json();
 
-    // If the response is not ok, throw an error with the error message and status code.
-    if (!res.ok) throw new Error(`${data.message} (${res.status})`);
-    console.log(data);
+    // Check for errors in the GraphQL response.
+    if (data.errors) {
+      const errorMessage = data.errors.map((error) => error.message).join('\n');
+      throw new Error(`GraphQL Error: ${errorMessage}`);
+    }
+
+    // If the response is not ok, throw an error with the status code and status text.
+    if (!res.ok) {
+      throw new Error(`${res.status} ${res.statusText}`);
+    }
+
     // Return the parsed response data.
     return data;
   } catch (err) {
-    // Re-throw any errors that occurred during the AJAX request.
+    // Re-throw any errors that occurred during the request.
     throw err;
   }
 };
